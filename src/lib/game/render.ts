@@ -74,6 +74,13 @@ function tree(v: View, cx: number, cy: number, kind: number) {
 		[[-9, -23, 4], [8, -24, 4.5], [1, -26, 3.5]].forEach(([dx, dy, r]) => { c.beginPath(); c.ellipse(p[0] + dx * z, p[1] + dy * z, r * z * 1.3, r * z, 0, 0, 7); c.fill(); });
 		return;
 	}
+	if (kind === 4) { // balanzan : tronc clair, couronne large et plate
+		shadow(v, cx, cy, 0.3);
+		box(v, cx, cy, 0.03, 0.03, 14, 0, '#9b8f80');
+		c.fillStyle = '#8fa86a'; c.beginPath(); c.ellipse(p[0], p[1] - 19 * z, 16 * z, 6 * z, 0, 0, 7); c.fill();
+		c.fillStyle = '#a3b97e'; c.beginPath(); c.ellipse(p[0] - 2 * z, p[1] - 22 * z, 10 * z, 4 * z, 0, 0, 7); c.fill();
+		return;
+	}
 	shadow(v, cx, cy, 0.24);
 	box(v, cx, cy, 0.03, 0.03, 10, 0, '#6b4a2b');
 	const big = kind === 2;
@@ -85,21 +92,43 @@ function tree(v: View, cx: number, cy: number, kind: number) {
 }
 
 // ---------- Sol ----------
-export interface GroundOpt { rain: boolean; time: number | null; layer: Svc | null; cov: Record<string, Uint8Array> | null; roads: (i: number) => [number, number][] }
+export interface GroundOpt { vert?: number; rain: boolean; time: number | null; layer: Svc | null; cov: Record<string, Uint8Array> | null; roads: (i: number) => [number, number][] }
 export function ground(v: View, x: number, y: number, t: Tile, i: number, o: GroundOpt) {
 	const c = v.ctx, cx = x + 0.5, cy = y + 0.5, h = hash(x, y);
 	let col: string;
 	if (t.t === 'w') col = mix('#3d8fb8', '#2f7aa3', h);
+	else if (t.t === 'm') col = o.rain ? mix('#5a9fc4', '#4b93bb', h) : mix('#c7a46c', '#bb9862', h);
 	else {
 		col = mix(t.low ? '#c39a5e' : '#d9a462', t.low ? '#b48d55' : '#cf9655', h);
 		if (t.bank && !t.b) col = mix('#e3c38d', '#d8b47a', h);
+		if (o.vert) col = mix(col, '#8fae55', o.vert);
 		if (o.rain) col = mix(col, '#8fae55', t.bank ? 0.25 : t.low ? 0.55 : 0.33);
 	}
-	if (t.b === 'route') col = mix('#a05b37', '#94532f', h);
+	if (t.b === 'champ') col = o.rain ? mix('#7fa64a', '#729c40', h) : mix('#d6b66a', '#cdaa5c', h);
+	if (t.b === 'route') col = t.t === 'm' ? '#9a9488' : mix('#a05b37', '#94532f', h);
 	if (t.b === 'foot') col = '#5f9c45';
 	const d = dia(v, cx, cy, 0.5);
 	poly(c, d, col);
 	c.strokeStyle = 'rgba(60,30,10,.08)'; c.lineWidth = 1; c.stroke();
+	if (t.t === 'm' && !t.b) {
+		const a = P(v, cx - 0.35, cy + 0.1), b = P(v, cx + 0.35, cy - 0.1);
+		c.strokeStyle = o.rain ? 'rgba(255,255,255,.25)' : 'rgba(110,80,40,.35)'; c.lineWidth = 1.2 * v.z;
+		c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(P(v, cx, cy)[0], P(v, cx, cy)[1] + 3 * v.z, b[0], b[1]); c.stroke();
+	}
+	if (t.b === 'champ') {
+		c.strokeStyle = o.rain ? 'rgba(40,80,20,.35)' : 'rgba(120,80,30,.3)'; c.lineWidth = 1.1 * v.z;
+		c.beginPath();
+		for (const f of [0.25, 0.45, 0.65, 0.85]) { const a = P(v, x + 0.1, y + f), b = P(v, x + 0.9, y + f); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); }
+		c.stroke();
+	}
+	if (t.b === 'rail') {
+		c.strokeStyle = '#6b5a48'; c.lineWidth = 2 * v.z; c.beginPath();
+		for (let k = 0; k < 5; k++) { const a = P(v, x + 0.1 + k * 0.2, y + 0.25), b = P(v, x + 0.1 + k * 0.2, y + 0.75); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); }
+		c.stroke();
+		c.strokeStyle = '#4a4f55'; c.lineWidth = 1.3 * v.z; c.beginPath();
+		for (const f of [0.35, 0.65]) { const a = P(v, x, y + f), b = P(v, x + 1, y + f); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); }
+		c.stroke();
+	}
 	if (t.t === 'w' && o.time != null) {
 		const s = Math.sin(o.time / 700 + x * 1.3 + y) * 0.5 + 0.5, a = P(v, cx - 0.25, cy), b = P(v, cx + 0.1, cy - 0.2);
 		c.strokeStyle = `rgba(255,255,255,${0.12 + 0.2 * s})`; c.lineWidth = 1.5 * v.z;
@@ -188,6 +217,7 @@ export function sprite(v: View, x: number, y: number, t: { b: BKey | null; lvl: 
 			break;
 		}
 		case 'mairie':
+			if (vv === 9) { mairieSoudanaise(v, cx, cy); break; }
 			shadow(v, cx, cy, 0.5);
 			box(v, cx, cy + 0.38, 0.2, 0.05, 2, 0, '#cbb894');
 			box(v, cx, cy, 0.42, 0.34, 20, 0, '#efe2c4');
@@ -265,6 +295,56 @@ export function sprite(v: View, x: number, y: number, t: { b: BKey | null; lvl: 
 		case 'arbre':
 			tree(v, cx + (hash(x, y) - 0.5) * 0.2, cy + (hash(y, x) - 0.5) * 0.2, vv);
 			break;
+		case 'usine':
+			shadow(v, cx, cy, 0.5);
+			box(v, cx + 0.3, cy - 0.28, 0.04, 0.04, 28, 0, '#8a8a8a');
+			box(v, cx, cy - 0.05, 0.42, 0.3, 14, 0, '#e7dcc6', '#9fb0bb');
+			windows(v, cx, cy - 0.05, 0.42, 0.3, 'L', 5, 5, 10, '#5b6b75', 2);
+			face(v, cx, cy - 0.05, 0.42, 0.3, 'L', 0.42, 0.6, 0, 10, '#5b6b75');
+			[[-0.3, 0.38], [-0.14, 0.38], [-0.22, 0.38]].forEach(([a, b], k) => box(v, cx + a, cy + b, 0.06, 0.06, 5, k === 2 ? 5 : 0, '#f4f4ef'));
+			break;
+		case 'quai': {
+			const south = vv === 1;
+			box(v, cx, cy, 0.42, 0.42, 2, 0, '#8a5a37', '#9c6a45');
+			const pir = (dx: number, dy: number, col: string) => south ? box(v, cx + dx, cy + 0.45 + dy, 0.3, 0.06, 3, 0, col) : box(v, cx + 0.45 + dy, cy + dx, 0.06, 0.3, 3, 0, col);
+			pir(-0.15, 0, '#c2452d'); pir(0.2, 0.1, '#2f7d8c');
+			const p = P(v, cx - 0.15, cy - 0.1);
+			['#a0522d', '#8b4513', '#b5651d'].forEach((k, j) => { c.fillStyle = k; c.beginPath(); c.ellipse(p[0] + (j - 1) * 6 * z, p[1] - 5 * z, 2.6 * z, 3.4 * z, 0, 0, 7); c.fill(); });
+			break;
+		}
+		case 'gare':
+			shadow(v, cx, cy, 0.45);
+			box(v, cx + 0.05, cy + 0.34, 0.42, 0.06, 2, 0, '#9a9488');
+			box(v, cx, cy - 0.05, 0.36, 0.24, 13, 0, '#efe0c0', '#c2452d');
+			windows(v, cx, cy - 0.05, 0.36, 0.24, 'L', 4, 0, 9, '#7a4a2a');
+			box(v, cx - 0.2, cy - 0.05, 0.12, 0.12, 6, 13, '#efe0c0', '#c2452d');
+			break;
+		case 'camions': {
+			box(v, cx, cy, 0.45, 0.45, 1, 0, '#9a9488');
+			const truck = (dx: number, dy: number, col: string) => {
+				box(v, cx + dx - 0.05, cy + dy, 0.2, 0.08, 8, 1.5, col);
+				box(v, cx + dx + 0.22, cy + dy, 0.06, 0.08, 9, 1.5, '#f3f0e8');
+				face(v, cx + dx + 0.22, cy + dy, 0.06, 0.08, 'R', 0.15, 0.85, 6, 9, '#3a4650');
+			};
+			truck(-0.15, -0.15, '#c2452d'); truck(0.05, 0.18, '#e8a33d');
+			break;
+		}
+		case 'grenier': {
+			const gr = (dx: number, dy: number) => {
+				const p = P(v, cx + dx, cy + dy);
+				c.fillStyle = 'rgba(40,20,5,.2)'; c.beginPath(); c.ellipse(p[0] + 2 * z, p[1] + 1 * z, 8 * z, 3.5 * z, 0, 0, 7); c.fill();
+				c.fillStyle = '#9e5f33'; c.fillRect(p[0] - 6 * z, p[1] - 12 * z, 12 * z, 12 * z);
+				c.beginPath(); c.ellipse(p[0], p[1], 6 * z, 2.6 * z, 0, 0, Math.PI); c.fill();
+				c.fillStyle = '#b8743f'; c.fillRect(p[0] - 6 * z, p[1] - 12 * z, 5 * z, 12 * z);
+				c.fillStyle = '#c9a55a'; c.beginPath(); c.moveTo(p[0] - 8.5 * z, p[1] - 11 * z); c.lineTo(p[0], p[1] - 25 * z); c.lineTo(p[0] + 8.5 * z, p[1] - 11 * z); c.closePath(); c.fill();
+				c.strokeStyle = 'rgba(90,60,20,.45)'; c.lineWidth = 0.8 * z; c.beginPath();
+				for (const f of [-4, 0, 4]) { c.moveTo(p[0], p[1] - 25 * z); c.lineTo(p[0] + f * 1.6 * z, p[1] - 11 * z); }
+				c.stroke();
+			};
+			shadow(v, cx, cy, 0.42, 0.1);
+			gr(-0.22, -0.2); gr(0.2, -0.18); gr(-0.05, 0.22);
+			break;
+		}
 		case 'lot':
 			box(v, cx, cy, 0.02, 0.02, 9, 0, '#6b4a2b');
 			if (warn) {
@@ -275,6 +355,24 @@ export function sprite(v: View, x: number, y: number, t: { b: BKey | null; lvl: 
 			}
 			break;
 	}
+}
+
+function mairieSoudanaise(v: View, cx: number, cy: number) {
+	const col = '#b8743f', dark = '#6b3f22';
+	shadow(v, cx, cy, 0.5);
+	box(v, cx, cy, 0.4, 0.34, 18, 0, col);
+	face(v, cx, cy, 0.4, 0.34, 'L', 0.42, 0.58, 0, 11, dark);
+	windows(v, cx, cy, 0.4, 0.34, 'L', 5, 8, 12, dark, 2);
+	windows(v, cx, cy, 0.4, 0.34, 'R', 3, 8, 12, dark);
+	for (let k = 0; k <= 4; k++) box(v, cx - 0.38 + k * 0.19, cy + 0.32, 0.025, 0.025, 6, 18, col);
+	for (let k = 0; k <= 3; k++) box(v, cx + 0.38, cy + 0.32 - k * 0.21, 0.025, 0.025, 6, 18, col);
+	box(v, cx, cy, 0.14, 0.14, 12, 18, col);
+	box(v, cx, cy, 0.03, 0.03, 7, 30, col);
+	const c = v.ctx, z = v.z;
+	c.strokeStyle = dark; c.lineWidth = 1 * z; c.beginPath();
+	for (let k = 0; k < 6; k++) { const p = P(v, cx - 0.4 + k * 0.16, cy + 0.34); c.moveTo(p[0], p[1] - 14 * z); c.lineTo(p[0] - 2 * z, p[1] - 13 * z); }
+	c.stroke();
+	flag(v, cx + 0.2, cy - 0.2, 18);
 }
 
 export function ghost(v: View, x: number, y: number, key: BKey, ok: boolean) {

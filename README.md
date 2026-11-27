@@ -22,6 +22,7 @@ Pour héberger le jeu dans un sous-dossier ou une iframe, avec un routage par `#
 ```
 src/lib/game/
   config.ts        bâtiments, outils, catégories, constantes d'équilibrage
+  communes.ts      les communes jouables (Ségou, Koutiala, Koulikoro, Bougouni, Sirakorola, Bènkadi)
   sim.ts           carte, couverture des services, satisfaction, finances, tour mensuel
   events.ts        cartes d'événements (personnage, choix, effets)
   people.ts        habitants : foule, déplacements sur les routes, répliques

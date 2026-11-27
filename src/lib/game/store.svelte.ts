@@ -3,6 +3,7 @@
 import { B, MANDATE, type Tool } from './config';
 import { newGame, tick, place, check, stats, log, type Game } from './sim';
 import { pickEvent, type GEvent } from './events';
+import type { CommuneId } from './communes';
 import { People } from './people';
 
 const KEY = 'meri-save-v2';
@@ -60,9 +61,10 @@ export function load(): boolean {
 }
 export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* rien */ } }
 
-export function start(name: string) {
-	game.g = newGame(name.trim() || 'Bènkadi');
+export function start(id: CommuneId) {
+	game.g = newGame(id);
 	log(game.g, `Installation du conseil communal de ${game.g.name}.`);
+	ui.layer = 0;
 	people.reset();
 	ui.modal = null; ui.sheet = null; ui.tool = 'voir'; ui.cat = null; ui.sel = -1; ui.pending = -1; ui.speed = 0;
 	save(); bump();

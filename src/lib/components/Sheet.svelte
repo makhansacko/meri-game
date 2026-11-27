@@ -25,9 +25,9 @@
 						: t.lvl === 2 ? 'Pour un R+1 : eau, école, santé et satisfaction ≥ 72 %.' : 'Le plus haut niveau. Bravo !'
 				};
 			}
-			if (!t.b) return { kind: 'plain' as const, title: t.t === 'w' ? 'Le fleuve' : t.low ? 'Bas-fond' : 'Terrain libre', text: t.t === 'w' ? 'Pêche et maraîchage sur les berges. On n’y construit pas.' : t.low ? 'Terrain inondable pendant l’hivernage : protège-le avec des caniveaux.' : 'Prêt à construire.' };
+			if (!t.b) return { kind: 'plain' as const, title: t.t === 'w' ? 'Le fleuve' : t.t === 'm' ? 'Le marigot' : t.low ? 'Bas-fond' : 'Terrain libre', text: t.t === 'w' ? 'Pêche et maraîchage sur les berges. On n’y construit pas.' : t.t === 'm' ? 'À sec en saison sèche, il déborde pendant l’hivernage. Une route peut le traverser par un radier.' : t.low ? 'Terrain inondable pendant l’hivernage : protège-le avec des caniveaux.' : 'Prêt à construire.' };
 			const d = B[t.b as BKey];
-			return { kind: 'plain' as const, title: d.label, text: d.desc + (d.maint ? ` Entretien : ${money(d.maint)} / mois.` : '') };
+			return { kind: 'plain' as const, title: d.label, text: d.desc + (d.income ? ` Rapporte environ ${money(d.income)} / mois.` : '') + (d.maint ? ` Entretien : ${money(d.maint)} / mois.` : '') };
 		}
 		if (s.kind === 'confirm') {
 			const d = B[ui.tool as BKey], free = ui.tool === 'forage' && g.tok > 0;
@@ -80,6 +80,7 @@
 				<tbody>
 					<tr><td>Impôts et TDRL <small>(recouvrement {Math.round(view.f.rec * 100)} %)</small></td><td>+{money(view.f.imp)}</td></tr>
 					<tr><td>Taxes du marché</td><td>+{money(view.f.mk)}</td></tr>
+					{#if view.f.loc}<tr><td>Repères de la commune <small>(patentes, quai, stationnement)</small></td><td>+{money(view.f.loc)}</td></tr>{/if}
 					<tr><td>Dotation de l’État <small>(en décembre)</small></td><td>+{money(view.f.tr)}</td></tr>
 					<tr><td>Entretien des équipements</td><td>−{money(view.f.ent)}</td></tr>
 					<tr class="tot"><td>Solde du mois</td><td>{view.f.net >= 0 ? '+' : ''}{money(view.f.net)}</td></tr>

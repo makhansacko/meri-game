@@ -22,7 +22,6 @@
 
 <style>
 	.side { position: fixed; right: 8px; top: calc(var(--sat) + 108px); z-index: 4; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-	.hidden { display: none; }
 	button { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; box-shadow: 0 4px 12px #0003; }
 	button.on { background: var(--teal); color: #fff; border-color: var(--teal); }
 	.tag { margin-top: -4px; font-size: 13px; font-weight: 800; background: var(--teal); color: #fff; border-radius: 99px; padding: 2px 9px; }

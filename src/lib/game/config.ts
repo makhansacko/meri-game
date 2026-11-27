@@ -10,7 +10,8 @@ export type BKey =
 	| 'route' | 'lot' | 'caniveau'
 	| 'forage' | 'borne' | 'marche' | 'ecole' | 'cscom'
 	| 'depot' | 'lampe' | 'arbre' | 'foot'
-	| 'mairie' | 'house';
+	| 'mairie' | 'house'
+	| 'usine' | 'quai' | 'gare' | 'camions' | 'grenier' | 'champ' | 'rail';
 export type Tool = BKey | 'voir' | 'demolir';
 
 export interface BDef {
@@ -21,6 +22,9 @@ export interface BDef {
 	svc?: Svc;
 	desc: string;
 	brush?: boolean; // se trace au doigt, comme un pinceau
+	fixed?: boolean; // repère de la commune : ne se démolit pas
+	income?: number; // recette mensuelle propre (M FCFA)
+	nuis?: boolean; // gêne les voisins immédiats
 }
 
 export const B: Record<BKey, BDef> = {
@@ -37,7 +41,15 @@ export const B: Record<BKey, BDef> = {
 	arbre: { label: 'Arbre', cost: 0.1, maint: 0, r: 1, svc: 'omb', brush: true, desc: 'Néré, manguier ou baobab : ombre et fraîcheur.' },
 	foot: { label: 'Terrain', cost: 2, maint: 0.03, r: 3, svc: 'loi', desc: 'Terrain de foot : les jeunes du grin en redemandent (rayon 3).' },
 	mairie: { label: 'Mairie', cost: 0, maint: 0.2, r: 1, svc: 'lum', desc: 'Le cœur de la commune. C’est ici que tu siègeras.' },
-	house: { label: 'Concession', cost: 0, maint: 0, desc: '' }
+	house: { label: 'Concession', cost: 0, maint: 0, desc: '' },
+	// Repères propres à chaque commune (placés au départ, ne se construisent pas)
+	usine: { label: 'Usine d’égrenage', cost: 0, maint: 0, income: 0.35, r: 3, svc: 'com', nuis: true, fixed: true, desc: 'Le coton-graine des villages y devient fibre. Patentes et emplois, mais bruit et poussière pour les voisins.' },
+	quai: { label: 'Quai des pirogues', cost: 0, maint: 0.02, income: 0.25, r: 3, svc: 'com', fixed: true, desc: 'Pêcheurs, potières et passeurs : le fleuve fait vivre le quartier.' },
+	gare: { label: 'Gare et port fluvial', cost: 0, maint: 0.02, income: 0.25, r: 3, svc: 'com', fixed: true, desc: 'Terminus du chemin de fer et départ des bateaux quand l’eau monte.' },
+	camions: { label: 'Aire des camions', cost: 0, maint: 0, income: 0.4, nuis: true, fixed: true, desc: 'Les poids lourds des mines y stationnent : une taxe de stationnement, mais du bruit et des routes abîmées.' },
+	grenier: { label: 'Banque de céréales', cost: 0, maint: 0.02, r: 3, svc: 'com', fixed: true, desc: 'Le stock de mil du village pour tenir pendant la soudure.' },
+	champ: { label: 'Champ', cost: 0, maint: 0, desc: 'Mil, sorgho ou coton selon la saison. Démolir un champ libère la parcelle.' },
+	rail: { label: 'Voie ferrée', cost: 0, maint: 0, fixed: true, desc: 'La ligne Dakar-Niger arrive ici.' }
 };
 
 export const DEMOLIR = { label: 'Démolir', cost: 0.1, desc: 'Détruit ce qui se trouve sur la case. Glisse le doigt pour en démolir plusieurs.' };

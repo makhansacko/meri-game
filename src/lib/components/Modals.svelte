@@ -5,8 +5,9 @@
 	import Art from './Art.svelte';
 	import DesignSheet from './DesignSheet.svelte';
 	import Icon from './Icon.svelte';
+	import { COMMUNES, COMMUNE_ORDER, type CommuneId } from '../game/communes';
 
-	let name = $state('Bènkadi');
+	let pick = $state<CommuneId>('segou');
 	const m = $derived(ui.modal);
 	const close = () => { ui.modal = null; bump(); };
 	const info = $derived.by(() => {
@@ -26,18 +27,27 @@
 		<div class="card" class:wide={m.kind === 'design'} class:hero={m.kind === 'start'}>
 			{#if m.kind === 'start'}
 				<div class="top">
-					<Art w={88} h={88} draw={(c, w, h) => bust(c, 'maire', w, h)} label="Portrait du maire" />
+					<Art w={80} h={80} draw={(c, w, h) => bust(c, 'maire', w, h)} label="Portrait du maire" />
 					<div>
 						<p class="kick">I ni ce, Mèri !</p>
 						<h2 class="title">Mèri</h2>
-						<p class="sub">Bâtis ta commune</p>
+						<p class="sub">Choisis ta commune</p>
 					</div>
 				</div>
-				<p>Tu viens d’être élu·e maire. Pendant 5 ans, trace des routes, apporte l’eau, ouvre écoles et CSCom. Tiens le budget, protège les quartiers pendant l’hivernage et écoute tes habitants pour être réélu·e.</p>
-				<label for="nm">Nom de ta commune</label>
-				<input id="nm" maxlength="22" bind:value={name} />
-				<div class="choices"><button class="go" onclick={() => start(name)}>Prendre mes fonctions</button></div>
-				<p class="note">Prototype : chiffres simplifiés, commune fictive.</p>
+				<p>Tu viens d’être élu·e maire pour 5 ans. Chaque commune a son fleuve ou son marigot, ses repères, ses défis.</p>
+				<div class="communes" role="radiogroup" aria-label="Communes">
+					{#each COMMUNE_ORDER as id (id)}
+						{@const c = COMMUNES[id]}
+						<button class="commune" class:on={pick === id} role="radio" aria-checked={pick === id} onclick={() => (pick = id)}>
+							<span class="cn">{c.nom}<i class="diff d-{c.difficulte}">{c.difficulte}</i></span>
+							<span class="cr">{c.region} · {c.profil === 'fictive' ? 'imaginaire' : c.profil}</span>
+							<span class="cd">{c.devise}</span>
+						</button>
+					{/each}
+				</div>
+				<p class="pickdesc"><b>{COMMUNES[pick].nom} :</b> {COMMUNES[pick].desc}</p>
+				<div class="choices"><button class="go" onclick={() => start(pick)}>Prendre mes fonctions à {COMMUNES[pick].nom}</button></div>
+				<p class="note">Communes réelles, situations de jeu inventées : aucun élu réel, chiffres simplifiés.</p>
 			{:else if m.kind === 'event'}
 				<div class="evhead">
 					<Art w={76} h={76} draw={(c, w, h) => bust(c, m.ev.who, w, h)} label={m.ev.whoName} />
@@ -112,8 +122,6 @@
 	.sub { font: 800 18px 'Baloo 2', sans-serif; margin: 0; }
 	.evhead { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
 	.evhead h2 { margin: 2px 0 0; }
-	label { display: block; font-weight: 800; font-size: 13px; margin-top: 12px; }
-	input { font: 16px Nunito, sans-serif; width: 100%; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--map); color: var(--ink); margin-top: 4px; }
 	.choices { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
 	.choices button { text-align: left; border: 1px solid var(--line); background: var(--card2); border-radius: 14px; padding: 11px 13px; font-weight: 800; font-size: 15px; min-height: 52px; }
 	.choices button em { display: block; font-style: normal; font-size: 13px; color: var(--muted); font-weight: 700; margin-top: 2px; }
@@ -128,5 +136,16 @@
 	.big div { display: flex; flex-direction: column; }
 	.big b { font: 800 28px 'Baloo 2', sans-serif; }
 	.big small { color: var(--muted); font-size: 13px; }
+	.communes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+	.commune { text-align: left; border: 2px solid var(--line); background: var(--card2); border-radius: 14px; padding: 9px 10px; display: flex; flex-direction: column; gap: 2px; min-height: 44px; }
+	.commune.on { border-color: var(--red); background: light-dark(#fff1e6, #3a2418); }
+	.cn { font: 800 18px/1.1 'Baloo 2', sans-serif; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+	.cr { font-size: 13px; color: var(--muted); font-weight: 700; }
+	.cd { font-size: 13px; line-height: 1.3; }
+	.diff { font: 800 13px Nunito, sans-serif; font-style: normal; padding: 1px 7px; border-radius: 99px; background: #2f8a5726; color: light-dark(#1f6b42, #8fd6a8); }
+	.d-Moyenne { background: #e8a33d33; color: light-dark(#8a5a10, #f2c27a); }
+	.d-Difficile { background: #c2452d26; color: var(--red); }
+	.pickdesc { margin-top: 10px; font-size: 14px; }
+	@media (max-width: 380px) { .communes { grid-template-columns: 1fr; } .cd { display: none; } }
 	.x { position: sticky; top: 0; float: right; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); display: grid; place-items: center; z-index: 2; }
 </style>

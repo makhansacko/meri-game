@@ -7,6 +7,11 @@
 	import Art from './Art.svelte';
 
 	const buildings: BKey[] = ['mairie', 'route', 'lot', 'caniveau', 'borne', 'forage', 'marche', 'ecole', 'cscom', 'lampe', 'foot', 'depot', 'arbre'];
+	const reperes: [BKey, number, string][] = [
+		['usine', 1, 'Koutiala'], ['mairie', 9, 'Ségou (style néo-soudanais)'], ['quai', 0, 'Ségou, Koulikoro'], ['gare', 1, 'Koulikoro'],
+		['camions', 1, 'Bougouni'], ['grenier', 1, 'Sirakorola'], ['champ', 1, 'Communes rurales'], ['rail', 1, 'Koulikoro']
+	];
+	const arbres: [number, string][] = [[0, 'Néré'], [2, 'Manguier (Bougouni)'], [3, 'Baobab'], [4, 'Balanzan (Ségou)']];
 	const LOOKS: { kind: PKind; look: Look }[] = [
 		{ kind: 'vendeuse', look: { skin: '#6e4528', a: '#e8a33d', b: '#c2452d', c: '#2f7d8c' } },
 		{ kind: 'porteuse', look: { skin: '#5c3a22', a: '#8a3b8f', b: '#f2b632', c: '#6a9b3c' } },
@@ -37,6 +42,22 @@
 			<figure>
 				<Art w={132} h={110} draw={(c, w, h) => drawTile(c, w, h, k, 0, 1)} label={B[k].label} />
 				<figcaption><b>{B[k].label}</b><span>{B[k].cost ? money(B[k].cost) : 'unique'}{B[k].r ? ` · rayon ${B[k].r}` : ''}</span></figcaption>
+			</figure>
+		{/each}
+	</div>
+
+	<h3>Repères des communes</h3>
+	<div class="grid">
+		{#each reperes as [k, v, lieu] (k + v)}
+			<figure>
+				<Art w={132} h={110} draw={(c, w, h) => drawTile(c, w, h, k, 0, v)} label={B[k].label} />
+				<figcaption><b>{k === 'mairie' ? 'Mairie soudanaise' : B[k].label}</b><span>{lieu}</span></figcaption>
+			</figure>
+		{/each}
+		{#each arbres as [v, l] (v)}
+			<figure>
+				<Art w={132} h={110} draw={(c, w, h) => drawTile(c, w, h, 'arbre', 0, v)} label={l} />
+				<figcaption><b>{l}</b><span>arbre</span></figcaption>
 			</figure>
 		{/each}
 	</div>

@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { N, TW, TH, B, LAYERS, clamp, type BKey } from '../game/config';
 	import { coverage, newGame, isRain, isStorm, roadAdj, type Game } from '../game/sim';
+	import { COMMUNES } from '../game/communes';
 	import { ground, sprite, ghost, highlight, person, P, type View } from '../game/render';
 	import { game, people, ui, applyAt, bump } from '../game/store.svelte';
 	import type { Person } from '../game/people';
@@ -11,7 +12,7 @@
 	let W = 0, H = 0, dpr = 1;
 	const cam = { x: 0, y: 0, z: 1 };
 	let fitted = false;
-	const demo: Game = newGame('Bènkadi');
+	const demo: Game = newGame('segou');
 	const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	export function fit() {
@@ -60,7 +61,7 @@
 			}
 			return r;
 		};
-		const opt = { rain: isRain(g), time: reduce ? null : t, layer, cov: cov as unknown as Record<string, Uint8Array>, roads };
+		const opt = { vert: COMMUNES[g.commune]?.vert ?? 0, rain: isRain(g), time: reduce ? null : t, layer, cov: cov as unknown as Record<string, Uint8Array>, roads };
 		for (let i = 0; i < N * N; i++) ground(v, i % N, (i / N) | 0, g.map[i], i, opt);
 		if (ui.sel >= 0 && ui.pending < 0 && g === game.g) highlight(v, ui.sel % N, (ui.sel / N) | 0);
 		const buckets = new Map<number, Person[]>();

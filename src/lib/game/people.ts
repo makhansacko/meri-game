@@ -2,6 +2,7 @@
 import { N, type BKey } from './config';
 import { coverage, count, at, stats, isRain, type Game } from './sim';
 import { SKIN, WAX, type PKind, type Look, type PDraw } from './render';
+import { COMMUNES } from './communes';
 
 export interface Person extends PDraw {
 	id: number; name: string; role: string;
@@ -251,7 +252,8 @@ export function quote(g: Game, p: Person): string {
 		has('com') ? 'Le marché est animé, les affaires marchent.' : '',
 		p.kind === 'moto' ? 'Les routes sont bonnes, je livre plus vite.' : '',
 		p.kind === 'doyen' ? 'J’ai vu cette commune grandir. Continuez comme ça.' : '',
-		p.kind === 'eleve' ? 'J’aime mon école. Plus tard, je serai maire !' : ''
+		p.kind === 'eleve' ? 'J’aime mon école. Plus tard, je serai maire !' : '',
+		...(COMMUNES[g.commune]?.repliques ?? [])
 	].filter(Boolean);
 	return happy[p.id % happy.length];
 }

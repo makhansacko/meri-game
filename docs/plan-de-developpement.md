@@ -30,6 +30,24 @@ Progression prévue : mandat 2 sur une carte de 24 × 24 avec conseil communal e
 
 Questions ouvertes : mode temps réel en plus du tour par tour ? place des autorités traditionnelles dans les décisions ? données réelles pour un mode « ma vraie commune » ?
 
+## 2 bis. Communes jouables
+
+Décision du 27 novembre 2026 : le jeu se joue dans les 5 communes de la plateforme « Ma Commune » (ID-SAHEL), plus Bènkadi, une commune imaginaire d'entraînement. **Communes réelles, situations inventées** : aucun élu réel, chiffres simplifiés. Les données sont dans `src/lib/game/communes.ts`.
+
+| Commune | Profil | Géographie en jeu | Repère | Défis propres | Difficulté |
+| --- | --- | --- | --- | --- | --- |
+| Ségou | Urbaine | Rive droite du Niger, balanzans, mairie néo-soudanaise | Quai des pirogues | Crue du fleuve, Festival sur le Niger, espace pour les potières | Facile |
+| Koutiala | Urbaine | Carrefour routier, marigot saisonnier qui traverse la ville | Usine d'égrenage de coton | Campagne cotonnière, exode rural | Moyenne |
+| Koulikoro | Urbaine | Bord du Niger, voie ferrée Dakar-Niger | Gare et port fluvial, quai | Extraction de sable et déscolarisation, saison des bateaux, crue | Moyenne |
+| Bougouni | Urbaine | Sud plus vert et plus arrosé, manguiers, marigot | Aire des camions | Camions des mines de lithium, fonds de développement local et transparence, saison des mangues | Moyenne |
+| Sirakorola | Rurale | Plusieurs villages, champs, mare, pistes | Banque de céréales | Peu d'impôts, dotation plus forte, soudure, conflit agriculteurs-éleveurs, piste coupée | Difficile |
+
+Ce que la commune change en jeu : carte et repères, budget et confiance de départ, poids des impôts locaux et de la dotation, risque d'inondation, essences d'arbres, événements locaux (2 à 3 par commune, deux fois plus fréquents que les généraux) et répliques des habitants.
+
+Question à tester en premier : jouer **sa** commune donne-t-il plus envie de rejouer qu'une commune imaginaire ? À tester à Bamako avec des joueurs originaires de ces villes.
+
+Lien avec Ma Commune : l'événement « fonds de développement local » de Bougouni (publier ou non l'usage des fonds) illustre la transparence au cœur du Système d'Intégrité Locale. D'autres événements de ce type peuvent suivre.
+
 ## 3. Direction artistique
 
 - Isométrie 2D « diorama », volumes simples, couleurs pleines, sans contour noir. Tuile 64 × 32 px. Lumière en haut à gauche : face gauche −16 %, face droite −32 %, toit +8 %.
@@ -108,4 +126,4 @@ Protocole : 6 à 8 joueurs par session, 15 min de jeu sans aide puis 10 min d'en
 | Partages par joueur actif | 0,3 | 0,5 |
 | Plantages (Android 2 Go) | < 1 % | < 0,5 % |
 
-Risques principaux : jeu perçu comme politique (commune fictive, charte, relecture) ; performances sur téléphones modestes (tests sur appareil, mode éco, plan B) ; trop pédagogique (tests de plaisir d'abord) ; représentations mal perçues (personnages variés, lieux de culte co-conçus) ; financement (démarrage frugal) ; données chères (hors ligne complet, application légère).
+Risques principaux : jeu perçu comme politique (communes réelles mais situations inventées, aucun élu réel, charte, relecture) ; performances sur téléphones modestes (tests sur appareil, mode éco, plan B) ; trop pédagogique (tests de plaisir d'abord) ; représentations mal perçues (personnages variés, lieux de culte co-conçus) ; financement (démarrage frugal) ; données chères (hors ligne complet, application légère).

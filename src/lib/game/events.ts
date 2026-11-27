@@ -1,9 +1,10 @@
 // Cartes d'événements : un personnage, une situation, 1 à 3 choix avec coût et effet affichés.
 import { addTemp, count, stats, type Game } from './sim';
+import type { CommuneId } from './communes';
 
 export type Who = 'chef' | 'commercante' | 'jeune' | 'gouverneur' | 'ong' | 'agent' | 'infirmiere' | 'enseignant' | 'diaspora';
 export interface Choice { label: string; effect: string; run: (g: Game) => string | void }
-export interface GEvent { id: string; who: Who; whoName: string; title: string; text: string; cond?: (g: Game) => boolean; choices: Choice[] }
+export interface GEvent { id: string; who: Who; whoName: string; title: string; text: string; cond?: (g: Game) => boolean; communes?: CommuneId[]; choices: Choice[] }
 
 export const EVENTS: GEvent[] = [
 	{ id: 'edm', who: 'agent', whoName: 'Seydou, agent municipal', title: 'Délestages',
@@ -73,6 +74,95 @@ export const EVENTS: GEvent[] = [
 		] }
 ];
 
+
+// ---------- Événements propres à chaque commune ----------
+const mois = (g: Game) => g.m % 12; // 0 = janvier
+export const LOCAL: GEvent[] = [
+	// Koutiala
+	{ id: 'kt-coton', communes: ['koutiala'], who: 'agent', whoName: 'Seydou, agent municipal', title: 'Campagne cotonnière', cond: (g) => mois(g) >= 10 || mois(g) <= 1,
+		text: 'Les camions de coton-graine font la queue devant l’usine et stationnent partout en ville. Les commerçants se plaignent.',
+		choices: [
+			{ label: 'Taxer le stationnement des camions', effect: '+1,5 M · satisfaction −4 pendant 2 mois', run: (g) => { g.budget += 1.5; addTemp(g, 'sat', -4, 2); } },
+			{ label: 'Aménager une aire d’attente avec la société cotonnière', effect: '−1 M · confiance +4', run: (g) => { g.budget -= 1; g.conf += 4; } }
+		] },
+	{ id: 'kt-exode', communes: ['koutiala'], who: 'chef', whoName: 'Le chef de quartier', title: 'Des familles arrivent des villages',
+		text: 'Après une mauvaise récolte, des familles viennent chercher du travail en ville. Elles s’installent où elles peuvent.',
+		choices: [
+			{ label: 'Ouvrir un lotissement social', effect: '−1 M · confiance +4', run: (g) => { g.budget -= 1; g.conf += 4; } },
+			{ label: 'Laisser faire', effect: 'Satisfaction −4 pendant 3 mois · confiance −3', run: (g) => { addTemp(g, 'sat', -4, 3); g.conf -= 3; } }
+		] },
+	// Ségou
+	{ id: 'sg-festival', communes: ['segou'], who: 'jeune', whoName: 'Adama, porte-parole des jeunes', title: 'Le Festival sur le Niger', cond: (g) => mois(g) === 0 || mois(g) === 1,
+		text: 'Les organisateurs du festival demandent l’appui de la mairie pour accueillir les visiteurs sur les berges.',
+		choices: [
+			{ label: 'Nettoyer les berges et accueillir les visiteurs', effect: '−1 M puis +2,5 M de retombées · confiance +3', run: (g) => { g.budget += 1.5; g.conf += 3; return 'Les hôtels et les maquis affichent complet : +2,5 M de retombées.'; } },
+			{ label: 'Laisser les organisateurs se débrouiller', effect: 'Confiance −2', run: (g) => { g.conf -= 2; } }
+		] },
+	{ id: 'sg-crue', communes: ['segou', 'koulikoro'], who: 'agent', whoName: 'Seydou, agent municipal', title: 'Le Niger monte', cond: (g) => mois(g) >= 6 && mois(g) <= 8,
+		text: 'Le fleuve est en crue. Dans les quartiers bas, l’eau approche des concessions.',
+		choices: [
+			{ label: 'Sacs de sable et alerte dans les quartiers bas', effect: '−0,8 M · risque d’inondation réduit', run: (g) => { g.budget -= 0.8; g.cure = 1; } },
+			{ label: 'Attendre la décrue', effect: 'Gratuit', run: () => {} }
+		] },
+	{ id: 'sg-potieres', communes: ['segou'], who: 'commercante', whoName: 'Tanti Oumou, présidente des potières', title: 'Les potières veulent un espace',
+		text: 'Les potières demandent un espace de vente couvert au bord du fleuve, près du quai.',
+		choices: [
+			{ label: 'Construire un hangar de vente', effect: '−0,6 M · confiance +4 · satisfaction +3 pendant 3 mois', run: (g) => { g.budget -= 0.6; g.conf += 4; addTemp(g, 'sat', 3, 3); } },
+			{ label: 'Pas cette année', effect: 'Confiance −3', run: (g) => { g.conf -= 3; } }
+		] },
+	// Bougouni
+	{ id: 'bg-camions', communes: ['bougouni'], who: 'agent', whoName: 'Seydou, agent municipal', title: 'Les routes s’abîment',
+		text: 'Les camions des mines de lithium défoncent les rues de la ville. Les habitants respirent la poussière.',
+		choices: [
+			{ label: 'Taxe de passage sur les poids lourds', effect: '+2 M · satisfaction −3 pendant 2 mois', run: (g) => { g.budget += 2; addTemp(g, 'sat', -3, 2); } },
+			{ label: 'Réparer et arroser les rues', effect: '−1,5 M · confiance +3', run: (g) => { g.budget -= 1.5; g.conf += 3; } }
+		] },
+	{ id: 'bg-fonds', communes: ['bougouni'], who: 'ong', whoName: 'Mme Diallo, société civile', title: 'Le fonds de développement local',
+		text: 'La société minière verse 3 M à la commune pour le développement local. La société civile demande comment ils seront utilisés.',
+		choices: [
+			{ label: 'Publier l’utilisation des fonds en assemblée publique', effect: '+3 M · confiance +6', run: (g) => { g.budget += 3; g.conf += 6; } },
+			{ label: 'Gérer en toute discrétion', effect: '+3 M · confiance −7 (les rumeurs courent)', run: (g) => { g.budget += 3; g.conf -= 7; } }
+		] },
+	{ id: 'bg-mangues', communes: ['bougouni'], who: 'commercante', whoName: 'Tanti Oumou, présidente des femmes du marché', title: 'La saison des mangues', cond: (g) => mois(g) >= 2 && mois(g) <= 5,
+		text: 'Les mangues arrivent par tonnes. Les camions d’exportateurs encombrent le marché et une partie de la récolte pourrit.',
+		choices: [
+			{ label: 'Aménager une aire de groupage', effect: '−0,8 M · confiance +3 · recettes du marché', run: (g) => { g.budget -= 0.8; g.conf += 3; addTemp(g, 'sat', 2, 2); } },
+			{ label: 'Laisser faire', effect: 'Satisfaction −3 pendant 2 mois', run: (g) => addTemp(g, 'sat', -3, 2) }
+		] },
+	// Koulikoro
+	{ id: 'kk-sable', communes: ['koulikoro'], who: 'enseignant', whoName: 'M. Konaté, enseignant', title: 'Le sable du fleuve',
+		text: 'L’extraction de sable rapporte vite. Des élèves quittent l’école pour charger les camions sur les berges.',
+		choices: [
+			{ label: 'Réglementer l’extraction et sensibiliser', effect: '−0,6 M · confiance +3', run: (g) => { g.budget -= 0.6; g.conf += 3; } },
+			{ label: 'Taxer les camions de sable', effect: '+1,5 M · satisfaction −4 pendant 2 mois', run: (g) => { g.budget += 1.5; addTemp(g, 'sat', -4, 2); } }
+		] },
+	{ id: 'kk-bateaux', communes: ['koulikoro'], who: 'commercante', whoName: 'Tanti Oumou, présidente des femmes du marché', title: 'Les bateaux repartent', cond: (g) => mois(g) >= 7 && mois(g) <= 10,
+		text: 'L’eau est assez haute : les bateaux chargent pour Ségou et Mopti. Le port s’anime.',
+		choices: [
+			{ label: 'Aménager le quai pour la saison', effect: '−1 M puis +2,5 M de taxes portuaires', run: (g) => { g.budget += 1.5; return 'Saison réussie au port : +2,5 M de taxes.'; } },
+			{ label: 'Laisser faire', effect: '+0,8 M', run: (g) => { g.budget += 0.8; } }
+		] },
+	// Sirakorola
+	{ id: 'sk-troupeaux', communes: ['sirakorola'], who: 'chef', whoName: 'Le chef de village', title: 'Un champ ravagé', cond: (g) => mois(g) >= 8 && mois(g) <= 11,
+		text: 'Un troupeau de passage a détruit un champ de mil avant la récolte. Cultivateurs et éleveurs sont venus à la mairie, très en colère.',
+		choices: [
+			{ label: 'Réunir une commission de conciliation', effect: '−0,3 M · confiance +5', run: (g) => { g.budget -= 0.3; g.conf += 5; } },
+			{ label: 'Infliger une amende aux éleveurs', effect: '+0,5 M · confiance −4', run: (g) => { g.budget += 0.5; g.conf -= 4; } }
+		] },
+	{ id: 'sk-soudure', communes: ['sirakorola'], who: 'infirmiere', whoName: 'Mariam, infirmière', title: 'La soudure', cond: (g) => mois(g) >= 5 && mois(g) <= 7,
+		text: 'Les greniers se vident avant la nouvelle récolte. Au CSCom, on voit plus d’enfants mal nourris.',
+		choices: [
+			{ label: 'Vendre le mil de la banque de céréales à prix modéré', effect: '−1 M · satisfaction +5 pendant 3 mois', run: (g) => { g.budget -= 1; addTemp(g, 'sat', 5, 3); } },
+			{ label: 'Attendre la récolte', effect: 'Satisfaction −8 pendant 3 mois · confiance −4', run: (g) => { addTemp(g, 'sat', -8, 3); g.conf -= 4; } }
+		] },
+	{ id: 'sk-piste', communes: ['sirakorola'], who: 'agent', whoName: 'Seydou, agent municipal', title: 'La piste est coupée', cond: (g) => mois(g) >= 6 && mois(g) <= 8,
+		text: 'Les pluies ont emporté un tronçon de piste. Les villages ne peuvent plus aller au marché ni au CSCom.',
+		choices: [
+			{ label: 'Remblayer avec les jeunes du village', effect: '−1,2 M · confiance +4', run: (g) => { g.budget -= 1.2; g.conf += 4; } },
+			{ label: 'Attendre la saison sèche', effect: 'Satisfaction −5 pendant 2 mois', run: (g) => addTemp(g, 'sat', -5, 2) }
+		] }
+];
+
 export const EV_HIV: GEvent = {
 	id: 'hiv', who: 'agent', whoName: 'Seydou, agent municipal', title: 'L’hivernage approche',
 	text: 'Les premières pluies arrivent en juin. Les caniveaux sont bouchés par le sable et les sachets plastiques.',
@@ -85,6 +175,8 @@ export const EV_HIV: GEvent = {
 export function pickEvent(g: Game): GEvent | null {
 	if (g.m % 12 === 4) return EV_HIV;
 	if (Math.random() >= 0.45) return null;
-	const pool = EVENTS.filter((e) => e.id !== g.lastEv && (!e.cond || e.cond(g)));
+	const ok = (e: GEvent) => e.id !== g.lastEv && (!e.cond || e.cond(g)) && (!e.communes || e.communes.includes(g.commune));
+	// les événements de la commune comptent double : c'est ce qui la rend reconnaissable
+	const pool = [...EVENTS.filter(ok), ...LOCAL.filter(ok), ...LOCAL.filter(ok)];
 	return pool.length ? pool[(Math.random() * pool.length) | 0] : null;
 }
