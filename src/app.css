@@ -1,0 +1,36 @@
+/* VOICE: joyeux, chaleureux — un jeu de quartier sahélien
+   IDEA: une place de mairie au soleil, bordée de tissu bogolan
+   PICTURE: la commune isométrique en latérite, plein écran
+   COLOUR and TYPE: brun bogolan, ocre latérite, or, rouge argile ; Baloo 2 + Nunito
+   LAYOUT: carte plein écran, HUD flottant en haut, dock au pouce en bas */
+:root {
+	color-scheme: light dark;
+	--map: light-dark(#f2e2c2, #1a140e);
+	--ink: light-dark(#2a1d14, #f3e6cf);
+	--band: #2a1d14;
+	--cream: #f6ead2;
+	--gold: #e8a33d;
+	--red: #c2452d;
+	--teal: #2f7d8c;
+	--green: #2f8a57;
+	--card: light-dark(#fffaf0, #241b14);
+	--card2: light-dark(#f6ecd8, #2e231a);
+	--line: light-dark(#e3cfa8, #3e2f22);
+	--muted: light-dark(#7a6248, #b9a283);
+	--sat: env(safe-area-inset-top, 0px);
+	--sab: env(safe-area-inset-bottom, 0px);
+	--dock: 76px;
+}
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
+* { box-sizing: border-box; min-width: 0; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; overscroll-behavior: none; }
+body {
+	background: var(--map); color: var(--ink);
+	font: 15px/1.45 Nunito, system-ui, sans-serif;
+	overflow: hidden; touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+h1, h2, h3, .num { font-family: 'Baloo 2', Nunito, sans-serif; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
