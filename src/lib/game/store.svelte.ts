@@ -6,7 +6,7 @@ import { pickEvent, type GEvent } from './events';
 import type { CommuneId } from './communes';
 import { People } from './people';
 
-const KEY = 'meri-save-v2';
+const KEY = 'meri-save-v3'; // v3 : la partie porte sa commune
 
 export const game: { g: Game | null } = { g: null };
 export const people = new People();
